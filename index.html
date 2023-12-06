@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Game</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+    canvas {
+      border: 1px solid #000;
+      display: block;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const box = 30;
+    const rows = 20;
+    const cols = 20;
+    canvas.width = box * cols;
+    canvas.height = box * rows;
+
+    let snake = [{ x: 10 * box, y: 10 * box }];
+    let dx = box;
+    let dy = 0;
+    let food = { x: Math.floor(Math.random() * cols) * box, y: Math.floor(Math.random() * rows) * box };
+
+    function drawSnake() {
+      snake.forEach(drawSnakePart);
+    }
+
+    function drawSnakePart(snakePart) {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(snakePart.x, snakePart.y, box, box);
+    }
+
+    function drawFood() {
+      ctx.fillStyle = "#FF0000";
+      ctx.fillRect(food.x, food.y, box, box);
+    }
+
+    function drawWall() {
+      ctx.fillStyle = "#999"; // 벽 색상
+      ctx.fillRect(0, 0, canvas.width, box);
+      ctx.fillRect(0, canvas.height - box, canvas.width, box);
+      ctx.fillRect(0, 0, box, canvas.height);
+      ctx.fillRect(canvas.width - box, 0, box, canvas.height);
+    }
+
+    function moveSnake() {
+      const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+      if (head.x >= canvas.width || head.x < 0 || head.y >= canvas.height || head.y < 0 || collision(head, snake)) {
+        clearInterval(game);
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        food = { x: Math.floor(Math.random() * cols) * box, y: Math.floor(Math.random() * rows) * box };
+      } else {
+        snake.pop();
+      }
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function draw() {
+      clearCanvas();
+      drawWall(); // 벽을 먼저 그립니다.
+      drawSnake();
+      drawFood();
+      moveSnake();
+    }
+
+    let game = setInterval(draw, 200); // 속도 조정을 위해 200ms(0.2초)로 변경
+
+    document.addEventListener("keydown", changeDirection);
+
+    function changeDirection(event) {
+      if (event.keyCode === 37 && dx !== box) {
+        dx = -box;
+        dy = 0;
+      } else if (event.keyCode === 38 && dy !== box * -1) {
+        dx = 0;
+        dy = -box;
+      } else if (event.keyCode === 39 && dx !== box * -1) {
+        dx = box;
+        dy = 0;
+      } else if (event.keyCode === 40 && dy !== box) {
+        dx = 0;
+        dy = box;
+      }
+    }
+
+    function collision(head, snakeArray) {
+      for (let i = 1; i < snakeArray.length; i++) {
+        if (head.x === snakeArray[i].x && head.y === snakeArray[i].y) {
+          return true;
+        }
+      }
+      return false;
+    }
+  </script>
+</body>
+</html>
